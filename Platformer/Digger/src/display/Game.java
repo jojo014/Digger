@@ -46,7 +46,7 @@ public class Game extends Canvas implements Runnable {
 	public static InputHandler input;
 	public boolean running = false;
 
-	public String NAME = "Digger";
+	public String NAME = "DIGGER 2.0";
 
 	public Game() {
 
