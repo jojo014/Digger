@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="javax.imageio.ImageIO"/>
+<fullyQualifiedTypeName name="java.util.logging.Level"/>
+<fullyQualifiedTypeName name="java.util.List"/>
+<fullyQualifiedTypeName name="display.entities.Entity"/>
+<fullyQualifiedTypeName name="level.tiles.Tile"/>
+<fullyQualifiedTypeName name="level.Level"/>
+<fullyQualifiedTypeName name="java.awt.Color"/>
+<fullyQualifiedTypeName name="java.lang.Math"/>
+<fullyQualifiedTypeName name="display.Game"/>
+<fullyQualifiedTypeName name="gfx.Sprite"/>
+</qualifiedTypeNameHistroy>

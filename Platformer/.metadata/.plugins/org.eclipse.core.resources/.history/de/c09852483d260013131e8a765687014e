@@ -1,0 +1,246 @@
+package display.entities;
+
+import gfx.Hud;
+import gfx.Screen;
+import gfx.Sprite;
+import level.Level;
+import level.tiles.Tile;
+import display.Game;
+import display.InputHandler;
+
+public class Player extends Mob {
+
+	private Screen screen;
+	private Game game;
+	private InputHandler input;
+	private boolean moving = false;
+	public int jumpTimer = 0;
+	public double fullHealth = 100;
+	public double health = fullHealth;
+	public int healing = 0;
+	public int lives = 3;
+	public double healthPercent;
+	public int staminaDegen = 0;
+	public int damageTimer = 49;
+	public double stamina = 50;
+	public double staminaPercent;
+	public int updates = 0;
+	public boolean respawned = false;
+	private Tile tile;
+	private Hud hud;
+
+	private boolean jumping = false;
+
+	public Player(Level level, int x, int y, InputHandler input) {
+		super(level, "Player", x, y, 1);
+		this.input = input;
+	}
+
+	public boolean hasCollided(int xa, int ya) {
+		int xMin = 2;
+		int xMax = 19;
+		int yMin = 0;
+		int yMax = 29;
+		for (int x = xMin; x < xMax; x++) {
+			if (isSolidTile(xa, ya, x, yMin)) {
+				return true;
+			}
+		}
+		for (int x = xMin; x < xMax; x++) {
+			if (isSolidTile(xa, ya, x, yMax)) {
+				return true;
+			}
+		}
+		for (int y = yMin; y < yMax; y++) {
+			if (isSolidTile(xa, ya, xMin, y)) {
+				return true;
+			}
+		}
+		for (int y = yMin; y < yMax; y++) {
+			if (isSolidTile(xa, ya, xMax, y)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public boolean onGround(int xa, int ya) {
+		int xMin = 4;
+		int xMax = 18;
+		int yMin = 0;
+		int yMax = 29;
+		for (int x = xMin; x < xMax; x++) {
+			if (isSolidTile(xa, ya, x, yMin)) {
+				return true;
+			}
+		}
+		for (int x = xMin; x < xMax; x++) {
+			if (isSolidTile(xa, ya, x, yMax)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean hitHarmfulTile(int xa, int ya) {
+		int xMin = 2;
+		int xMax = 19;
+		int yMin = 0;
+		int yMax = 29;
+		for (int x = xMin; x < xMax; x++) {
+			if (isHarmfulTile(xa, ya, x, yMin)) {
+				return true;
+
+			}
+		}
+		for (int x = xMin; x < xMax; x++) {
+			if (isHarmfulTile(xa, ya, x, yMax)) {
+				return true;
+
+			}
+		}
+		for (int y = yMin; y < yMax; y++) {
+			if (isHarmfulTile(xa, ya, xMin, y)) {
+				return true;
+			}
+		}
+		for (int y = yMin; y < yMax; y++) {
+			if (isHarmfulTile(xa, ya, xMax, y)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public boolean die(int xa, int ya) {
+		if (hitHarmfulTile(xa, ya)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public void tick() {
+		moving = false;
+		updates++;
+		healthPercent = health / 100;
+		staminaPercent = stamina / 50;
+		healing++;
+
+		if (healing > 50) {
+			health += 5;
+			if (!input.sprint.isPressed()) {
+				stamina += 5;
+			}
+			healing = 0;
+		}
+		if (health < 0 || health > 100) {
+			health = 100;
+		}
+		if (stamina < 0 || stamina > 50) {
+			stamina = 50;
+		}
+		if (updates > 1000) {
+			updates = 0;
+
+		}
+		int xa = 0;
+		int ya = 0;
+
+		ya = ya + 3;
+
+		if (input.left.isPressed()) {
+			if (input.sprint.isPressed() && stamina > 0) {
+				xa -= 4;
+				staminaDegen++;
+				if (staminaDegen >= 2) {
+					stamina--;
+					staminaDegen = 0;
+				}
+				moving = true;
+			} else {
+				xa -= 2;
+				moving = true;
+			}
+		}
+		if (input.right.isPressed()) {
+			if (input.sprint.isPressed() && stamina > 0) {
+				xa += 4;
+				staminaDegen++;
+				if (staminaDegen >= 2) {
+					stamina--;
+					staminaDegen = 0;
+				}
+
+				moving = true;
+			} else {
+				xa += 2;
+				moving = true;
+			}
+		}
+		if (input.jump.isPressed() && jumpTimer < 15) {
+			ya = ya - 6;
+			moving = true;
+			jumpTimer++;
+			jumping = true;
+			damageTimer = 50;
+		}
+
+		if (xa != 0 || ya != 0) {
+			move(xa, ya);
+			isMoving = true;
+		} else {
+			isMoving = false;
+
+		}
+
+		if (onGround(xa, ya)) {
+			jumpTimer = 0;
+			jumping = false;
+		}
+
+		if (jumping) {
+			damageTimer = 0;
+		}
+		if (die(xa, ya)) {
+			jumping = false;
+		}
+		if (die(xa, ya)) {
+
+			damageTimer++;
+			if (damageTimer % 50 == 0) {
+				health -= 55;
+			}
+			if (damageTimer > 50) {
+				damageTimer = 0;
+			}
+			if (respawned) {
+				damageTimer = 49;
+				respawned = false;
+			}
+
+		}
+
+		if (lives <= 0) {
+			hud.gameOver = true;
+		}
+
+	}
+
+	@Override
+	public void render(Screen screen) {
+		Sprite sprite = Sprite.playerIdle;
+		if (updates % 40 > 20) {
+			sprite = sprite.playerIdle;
+		}
+		if (updates % 40 > 20) {
+			sprite = sprite.playerIdle2;
+		}
+
+		screen.renderPlayer(x, y, sprite);
+
+	}
+}
